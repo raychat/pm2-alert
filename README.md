@@ -7,7 +7,7 @@ Depends on the cron configuration that defined in `pm2-alert.js`, it will check 
 ### How to use
 1. simply install pm2-alert via 
 ```npm install pm2-alert --save``` 
-2. Copy `pm2-alert.js` from node_modules/pm2-alert into the root directory of your application
+2. Copy `pm2-alert.js` from `node_modules/pm2-alert` into the root directory of your application
 3. Edit `pm2-alert.js` and replace `to` with your Slack Incomming Webhook URL
 4. Start your application via pm2 then Start `pm2-alert.js` with pm2 by running `pm2 start pm2-alert.js`
 
