@@ -1,6 +1,6 @@
 {
   "name": "pm2-alert",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "send Events of pm2 and alerting process memory leak to slack",
   "main": "index.js",
   "scripts": {
