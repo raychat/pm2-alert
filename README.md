@@ -3,6 +3,8 @@ Get notified the changes and events of your processes in Slack
 
 ### How it works
 Depends on the cron configuration that defined in `pm2-alert.js`, it will check the memory of your processes which managed by `pm2` and if its memory reach the maximum size then it will send notification via `Slack`
+Notification Example: 
+![Slack Notification](https://image.ibb.co/jYBf2U/Capture1.png)
 
 ### How to use
 1. simply install pm2-alert via 
