@@ -16,6 +16,7 @@ class pm2_alert {
             .then(() => {
 
                 _this._setCron(_this._config.memory.cron, 'memory')
+                console.log(`pm2-alert is listening for these processes: ${_this._processes.toString()}`);
             })
             .catch(err => {
                 console.error(err)
@@ -125,7 +126,7 @@ class pm2_alert {
                             }
                         ]
 
-                        if(!Array.isArray(_this._config.memory.warning)) {
+                        if (!Array.isArray(_this._config.memory.warning)) {
                             console.error('configuration problem, please check your config file')
                         }
 
