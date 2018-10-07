@@ -50,8 +50,7 @@ let config = {
          * Get notified when your memory reached maxMemroySize
          * By default: 800MB
          */
-        // maxMemroySize: 800 * 1000000, // when process reach 800MB get alerted
-        maxMemroySize: 10000, // when process reach 800MB get alerted
+        maxMemroySize: 800 * 1000000, // when process reach 800MB get alerted
 
 
         /**
