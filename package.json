@@ -1,6 +1,6 @@
 {
   "name": "pm2-alert",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "send Events of pm2 and alerting process memory leak to slack",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "author": {
     "name": "hamet gholizadeh",
     "email": "hamet.gh@gmail.com",
-    "url": "https://raychat.io" 
+    "url": "https://raychat.io"
   },
   "license": "ISC",
   "dependencies": {
