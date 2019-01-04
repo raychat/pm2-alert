@@ -78,5 +78,5 @@ let config = {
 }
 
 
-const pm2_slack = require('./index')
+const pm2_slack = require('pm2-alert')
 new pm2_slack(config)
