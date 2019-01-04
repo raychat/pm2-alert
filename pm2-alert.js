@@ -12,17 +12,20 @@ let config = {
 
 
     /**
-     * Slack Incomming Webhook URL.
-     * To get the Slack URL, you need to setup an Incoming Webhook. 
-     * More details on how to set this up can be found here: https://api.slack.com/incoming-webhooks
+     * Webhook URL
      */
-    to: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
+    to: 'http://yourwebhookurl.com',
 
+
+    /**
+     * set target
+     */
+    target: 'slack', // Custom or Slack
 
 
 
     // TODO: listen to thease Events then send notification
-    // Events: ['start', 'restart'], // pm2 events
+    events: ['restart', 'delete', 'stop', 'restart overlimit', 'exit', 'start', 'online'], // pm2 events
 
 
     info: {
@@ -75,5 +78,5 @@ let config = {
 }
 
 
-const pm2_slack = require('pm2-alert')
+const pm2_slack = require('./index')
 new pm2_slack(config)

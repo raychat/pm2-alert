@@ -1,5 +1,5 @@
 const func = require('./lib/func')
-const slack = require('./lib/slack')
+const chttp = require('./lib/http')
 const pm2 = require('pm2')
 const cron = require('node-cron');
 
@@ -16,6 +16,7 @@ class pm2_alert {
             .then(() => {
 
                 _this._setCron(_this._config.memory.cron, 'memory')
+                // _this._launchBus(_this._config.events);
                 console.log(`pm2-alert is listening for these processes: ${_this._processes.toString()}`);
             })
             .catch(err => {
@@ -64,7 +65,6 @@ class pm2_alert {
      * @param {String} method 
      */
     _setCron(cronEx, method) {
-
         cron.schedule(cronEx, () => {
             if (method === 'memory') this._checkMemory()
         });
@@ -89,60 +89,93 @@ class pm2_alert {
             }
             list.forEach((proc) => {
 
+
+
+
                 // if process is being enabled to monitoring then check memory of process
                 if (_this._processes.indexOf(proc.name) !== -1) {
 
 
                     // if process memory more than alert.maxMemroySize then send notification
                     if (proc.monit.memory >= _this._config.memory.maxMemroySize) {
+
+
                         let server = '';
                         if (_this._config.info) server = _this._config.info.serverName || 'UNKNOWN SERVER'
 
-                        let fields = [
-                            {
-                                "title": "Event",
-                                "value": "Memory leak",
-                                "short": false
-                            },
-                            {
-                                "title": "Server",
-                                "value": server,
-                                "short": false
-                            },
-                            {
-                                "title": "Process id/name/status",
-                                "value": `${proc.pm_id}.${proc.name}: ${proc.pm2_env.status}`,
-                                "short": false
-                            },
-                            {
-                                "title": "Memory & Cpu",
-                                "value": `${func.bytesToSize(proc.monit.memory)} & ${proc.monit.cpu}%`,
-                                "short": false
-                            },
-                            {
-                                "title": "Restart time",
-                                "value": `${proc.pm2_env.restart_time}`,
-                                "short": false
-                            }
-                        ]
 
-                        if (!Array.isArray(_this._config.memory.warning)) {
-                            console.error('configuration problem, please check your config file')
+                        if (_this._config.target === 'custom') {
+                            let msg = `🛎 ${_this._config.memory.warning[0].pretext}\n
+Event:      \`\`\` Memory leak\`\`\` \n
+Server:     \`\`\` ${server} \`\`\` \n
+Process id/name/status:    \`\`\` ${proc.pm_id} ${proc.name}  ${proc.pm2_env.status} \`\`\`\n
+Memory & Cpu: \`\`\` ${func.bytesToSize(proc.monit.memory)} & ${proc.monit.cpu}% \`\`\`\n
+Restart time: \`\`\` ${proc.pm2_env.restart_time} \`\`\`\n
+${_this._config.memory.warning[0].footer}`
+
+                            chttp.send({
+                                url: _this._config.to,
+                                json: { "msg": msg }
+                            })
+                                .then(res => {
+                                    console.log('notification sent!')
+                                })
+                                .catch(err => {
+                                    console.error(err)
+
+                                })
+                        } else {
+                            let fields = [
+                                {
+                                    "title": "Event",
+                                    "value": "Memory leak",
+                                    "short": false
+                                },
+                                {
+                                    "title": "Server",
+                                    "value": server,
+                                    "short": false
+                                },
+                                {
+                                    "title": "Process id/name/status",
+                                    "value": `${proc.pm_id}.${proc.name}: ${proc.pm2_env.status}`,
+                                    "short": false
+                                },
+                                {
+                                    "title": "Memory & Cpu",
+                                    "value": `${func.bytesToSize(proc.monit.memory)} & ${proc.monit.cpu}%`,
+                                    "short": false
+                                },
+                                {
+                                    "title": "Restart time",
+                                    "value": `${proc.pm2_env.restart_time}`,
+                                    "short": false
+                                }
+                            ]
+
+                            if (!Array.isArray(_this._config.memory.warning)) {
+                                console.error('configuration problem, please check your config file')
+                            }
+
+                            _this._config.memory.warning[0].fields = fields
+
+                            chttp.send({
+                                url: _this._config.to,
+                                json: { "attachments": _this._config.memory.warning }
+                            })
+                                .then(res => {
+                                    console.log('notification sent!')
+                                })
+                                .catch(err => {
+                                    console.error(err)
+
+                                })
                         }
 
-                        _this._config.memory.warning[0].fields = fields
 
-                        slack.send({
-                            url: _this._config.to,
-                            json: { "attachments": _this._config.memory.warning }
-                        })
-                            .then(res => {
-                                console.log('notification sent!')
-                            })
-                            .catch(err => {
-                                console.error(err)
 
-                            })
+
+
                     }
 
 
@@ -160,6 +193,65 @@ class pm2_alert {
 
 
 
+    }
+
+
+
+
+    _launchBus(events) {
+        const _this = this;
+        pm2.launchBus(function (err, bus) {
+
+
+
+            bus.on('process:event', packet => {
+                if (events.indexOf(packet.event) != -1) {
+                    console.log(packet)
+                    let fields = [
+                        {
+                            "title": "Event",
+                            "value": packet.event,
+                            "short": false
+                        },
+                        {
+                            "title": "Server",
+                            "value": _this._config.info.serverName || 'UNKNOWN SERVER',
+                            "short": false
+                        },
+                        {
+                            "title": "Process id/name/status",
+                            "value": `${packet.pm_id}.${packet.name}: ${packet.process.status}`,
+                            "short": false
+                        },
+
+                        {
+                            "title": "Restart time",
+                            "value": `${packet.process.restart_time}`,
+                            "short": false
+                        }
+                    ]
+
+                    _this._config.memory.warning[0].fields = fields
+
+                    chttp.send({
+                        url: _this._config.to,
+                        json: { "attachments": _this._config.memory.warning }
+                    }).then(res => {
+                        console.log('notification sent!')
+                    })
+                        .catch(err => {
+                            console.error(err)
+
+                        })
+
+
+
+
+                }
+            })
+
+
+        });
     }
 
 
