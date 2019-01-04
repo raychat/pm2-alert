@@ -35,6 +35,12 @@ let config = {
      */
     to: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
 
+    /**
+     * set target
+     */
+    target: 'slack', // custom or slack
+
+
     // TODO: listen to these Events then send notification
     // Events: ['start', 'restart'], // pm2 events
 
